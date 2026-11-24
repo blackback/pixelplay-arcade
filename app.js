@@ -32,7 +32,7 @@ async function renderGlobalLeaderboard(){
   if(!list||!select||leaderboardBusy)return;
   leaderboardBusy=true;list.innerHTML='<p class="muted">Loading global scores…</p>';
   const game=select.value||'reaction-rush';
-  const order=game==='reaction-rush'?'score.asc':'score.desc';
+  const order='score.desc';
   try{
     const url=SUPABASE_URL+'/rest/v1/leaderboard_scores?select=player_name,score,created_at&game=eq.'+encodeURIComponent(game)+'&order='+order+',created_at.asc&limit=10';
     const response=await fetch(url,{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY}});
