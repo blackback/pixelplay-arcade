@@ -56,7 +56,7 @@ function closeAccount(){$('#accountModal').hidden=true}
 function setAuthMode(mode){
  authMode=mode;$('#authUsernameWrap').hidden=mode!=='signup';$('#authSubmit').textContent=mode==='signup'?'Create account':'Sign in';
  $('#authSignupMode').classList.toggle('active',mode==='signup');$('#authLoginMode').classList.toggle('active',mode==='login');
- $('#authPassword').autocomplete=mode==='signup'?'new-password':'current-password';
+ $('#authPassword').autocomplete=mode==='signup'?'new-password':'current-password';$('#accountUsername').required=mode==='signup';
  $('#authMessage').textContent=mode==='signup'?'Choose a public player name. Use your email to secure your account.':'Welcome back. Sign in to continue your arcade profile.';
 }
 async function handleAuthSubmit(e){
