@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090b16">
+  <meta name="description" content="Play quick, free browser arcade games. Challenge your reflexes, memory and high scores on PixelPlay Arcade.">
+  <meta property="og:title" content="PixelPlay Arcade — Play Something Fun">
+  <meta property="og:description" content="Free mini-games. No downloads. Just play.">
+  <title>PixelPlay Arcade — Free Online Mini Games</title>
+  <link rel="canonical" href="https://pixelplay-arcade.netlify.app/">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="PixelPlay Arcade home"><span class="brand-mark">P</span><span>PIXEL<span class="accent">PLAY</span></span></a>
+    <nav><a href="#games">Games</a><a href="#leaderboard">Leaderboard</a><a href="about.html">About</a></nav>
+    <button class="profile-pill" id="profileButton" type="button"><span class="avatar">✦</span><span id="playerName">Guest Player</span></button>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="live-dot"></span> THE ARCADE IS OPEN</p>
+        <h1>One more round.<br><span class="gradient-text">One more record.</span></h1>
+        <p class="hero-sub">Tiny games. Big bragging rights. Jump in, beat your best, and make today’s high score yours.</p>
+        <a class="primary-btn" href="#games">Explore games <span>↗</span></a>
+        <div class="hero-stats"><div><strong id="gameCount">05</strong><span>FREE GAMES</span></div><div><strong id="playedCount">0</strong><span>ROUNDS PLAYED</span></div><div><strong id="bestScore">—</strong><span>YOUR BEST</span></div></div>
+      </div>
+      <div class="hero-art" aria-label="Decorative arcade illustration">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="pixel-star star-a">✦</div><div class="pixel-star star-b">✧</div>
+        <div class="arcade-machine"><div class="machine-top"><span>PIXEL PLAY</span><i></i></div><div class="machine-screen"><div class="screen-glow">READY<br><b>PLAYER 1</b></div><div class="screen-scan"></div></div><div class="machine-controls"><span></span><span></span><span></span><b></b><b></b></div><div class="machine-base"></div></div>
+        <div class="floating-score">🏆 <span>NEW HIGH SCORE?</span></div>
+      </div>
+    </section>
+    <section class="ticker" aria-label="Arcade motto"><span>NO DOWNLOADS</span><i>✦</i><span>NO PAYWALLS</span><i>✦</i><span>JUST GOOD GAMES</span><i>✦</i><span>PLAY YOUR WAY</span></section>
+    <section class="section" id="games">
+      <div class="section-heading"><div><p class="eyebrow">PICK YOUR CHALLENGE</p><h2>Choose your game<span class="accent">.</span></h2></div><label class="search-box"><span>⌕</span><input id="gameSearch" type="search" placeholder="Find a game..." aria-label="Search games"></label></div>
+      <div class="filter-row"><button class="filter active" data-filter="all">All games</button><button class="filter" data-filter="reflex">Reflex</button><button class="filter" data-filter="puzzle">Puzzle</button><button class="filter" data-filter="arcade">Arcade</button></div>
+      <div class="game-grid" id="gameGrid">
+        <article class="game-card" data-game="reaction" data-category="reflex"><div class="game-art art-reaction"><span class="art-label">01 / REFLEX</span><div class="reaction-orb">!</div><span class="art-caption">READY?</span></div><div class="game-info"><div><h3>Reaction Rush</h3><p>How fast are your reflexes?</p></div><span class="game-arrow">↗</span></div><button class="play-card" data-launch="reaction">Play now</button></article>
+        <article class="game-card" data-game="memory" data-category="puzzle"><div class="game-art art-memory"><span class="art-label">02 / PUZZLE</span><div class="memory-tiles"><i>✦</i><i>?</i><i>?</i><i>✦</i></div><span class="art-caption">REMEMBER</span></div><div class="game-info"><div><h3>Memory Match</h3><p>Find every matching pair.</p></div><span class="game-arrow">↗</span></div><button class="play-card" data-launch="memory">Play now</button></article>
+        <article class="game-card" data-game="snake" data-category="arcade"><div class="game-art art-snake"><span class="art-label">03 / ARCADE</span><div class="snake-board">····<b>●</b><br>··<b>●●●</b>·<br>·····<b>◆</b></div><span class="art-caption">GROW BIG</span></div><div class="game-info"><div><h3>Neon Snake</h3><p>Eat, grow, don't crash.</p></div><span class="game-arrow">↗</span></div><button class="play-card" data-launch="snake">Play now</button></article>
+        <article class="game-card" data-game="target" data-category="reflex"><div class="game-art art-target"><span class="art-label">04 / REFLEX</span><div class="target-rings"><i></i><b>+</b></div><span class="art-caption">LOCK ON</span></div><div class="game-info"><div><h3>Target Tap</h3><p>Hit as many as you can.</p></div><span class="game-arrow">↗</span></div><button class="play-card" data-launch="target">Play now</button></article>
+        <article class="game-card" data-game="number" data-category="puzzle"><div class="game-art art-number"><span class="art-label">05 / PUZZLE</span><div class="number-grid"><i>2</i><i>4</i><i>8</i><i>16</i></div><span class="art-caption">THINK FAST</span></div><div class="game-info"><div><h3>2048 Dash</h3><p>Merge tiles. Chase 2048.</p></div><span class="game-arrow">↗</span></div><button class="play-card" data-launch="number">Play now</button></article>
+      </div>
+      <p class="empty-state" id="emptyState" hidden>No games match that search. Try another name.</p>
+    </section>
+    <section class="lower-grid">
+      <div class="leader-panel" id="leaderboard"><div class="panel-heading"><div><p class="eyebrow">LOCAL HALL OF FAME</p><h2>Your leaderboard</h2></div><span class="trophy">🏆</span></div><p class="panel-note">Scores are saved on this device. A shared global leaderboard is not enabled yet.</p><div id="scoreList" class="score-list"><p class="muted">Play a game to put your first score on the board.</p></div></div>
+      <div class="challenge-panel"><p class="eyebrow">TODAY'S MINI MISSION</p><div class="challenge-icon">⚡</div><h2>Beat the clock.</h2><p>Play Reaction Rush and try to get an average reaction time under 300 milliseconds.</p><button class="secondary-btn" data-launch="reaction">Accept challenge ↗</button></div>
+    </section>
+    <section class="seo-copy"><p class="eyebrow">WELCOME TO PIXELPLAY</p><h2>Free online arcade games, ready when you are.</h2><p>PixelPlay Arcade is a collection of quick browser games built for short breaks and friendly personal challenges. Test your reaction speed, train your memory, guide a neon snake and solve number puzzles. Games run right in your browser, with no download or account required. Choose a game, learn the controls and see if you can beat your personal best.</p></section>
+  </main>
+  <footer><a class="brand" href="#"><span class="brand-mark">P</span><span>PIXEL<span class="accent">PLAY</span></span></a><p>Small games. Endless rematches.</p><div class="footer-links"><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="mailto:hello@pixelplayarcade.example">Contact</a></div><small>© <span id="year"></span> PixelPlay Arcade. Made for fun.</small></footer>
+  <div class="modal-backdrop" id="gameModal" hidden><section class="game-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-top"><div><p class="eyebrow" id="modalEyebrow">ARCADE GAME</p><h2 id="modalTitle">Game title</h2></div><button class="icon-btn" id="closeGame" aria-label="Close game">×</button></div><div id="gameStage" class="game-stage"></div><p class="game-help" id="gameHelp"></p></section></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
