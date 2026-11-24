@@ -41,3 +41,8 @@
 .game-action:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-2px);box-shadow:0 5px 16px #0004}
 .game-action:focus-visible,.reaction-pad:focus-visible,.memory-card:focus-visible,.target-dot:focus-visible{outline:3px solid #fff;outline-offset:3px}
 @media(max-width:560px){.target-zone{height:235px}.memory-board{gap:6px}.memory-card{border-radius:7px}.number-board{gap:5px;padding:6px}.number-controls .game-action{width:52px;height:46px}}
+
+/* Global leaderboard controls */
+.leaderboard-select-label{display:block;margin:16px 0 6px;color:var(--muted);font:700 10px 'DM Mono',monospace;letter-spacing:.12em}
+.leaderboard-select{width:100%;max-width:260px;padding:11px 38px 11px 13px;border:1px solid #343d5a;border-radius:9px;background:#151b2b;color:var(--text);font:600 13px inherit;cursor:pointer}
+.leaderboard-select:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
