@@ -65,3 +65,5 @@
 .account-signout{margin-top:10px;padding:9px 13px;border:1px solid #75475d;border-radius:8px;background:#321b2c;color:#ffb2c7;font-weight:700;cursor:pointer}
 .account-footnote{margin:16px 0 0;font-size:10px}
 @media(max-width:560px){.account-modal{padding:19px}.account-modal h2{font-size:22px}}
+
+.account-modal [hidden]{display:none}
