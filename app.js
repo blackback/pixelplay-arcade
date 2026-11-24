@@ -37,8 +37,12 @@ async function loadPlayerProfile(){
  if(!r.ok)throw new Error('Could not load player profile.');
  const rows=await r.json();
  if(rows[0]?.username){player=rows[0].username;store.set('player',player);renderStats();return;}
- const pending=store.get('pendingUsername','');
- if(!pending)return;
+ let pending=store.get('pendingUsername','');
+ if(!pending){
+  const suggested=String(user.user_metadata?.display_name||user.email?.split('@')[0]||'').replace(/[^A-Za-z0-9_]/g,'').slice(0,18);
+  pending=suggested.length>=3?suggested:'Player'+user.id.replace(/-/g,'').slice(0,6);
+  store.set('pendingUsername',pending);
+ }
  const save=await fetch(SUPABASE_URL+'/rest/v1/player_profiles?on_conflict=user_id',{method:'POST',headers:authHeaders({Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify({user_id:user.id,username:pending})});
  const data=await save.json().catch(()=>[]);
  if(!save.ok)throw new Error(data.message||data.details||'That username may already be taken.');
@@ -96,7 +100,7 @@ async function renderGlobalLeaderboard(){
  const requestId=++leaderboardRequest;list.innerHTML='<p class="muted">Loading global scores…</p>';
  const game=select.value||'reaction-rush';
  try{
-  const url=SUPABASE_URL+'/rest/v1/leaderboard_scores?select=player_name,score,created_at&game=eq.'+encodeURIComponent(game)+'&order=score.desc,created_at.asc&limit=10';
+  const url=SUPABASE_URL+'/rest/v1/leaderboard_best_scores?select=player_name,score,created_at&game=eq.'+encodeURIComponent(game)+'&order=score.desc,created_at.asc&limit=10';
   const response=await fetch(url,{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY}});
   if(!response.ok)throw new Error('Leaderboard request failed ('+response.status+')');
   const rows=await response.json();if(requestId!==leaderboardRequest)return;
