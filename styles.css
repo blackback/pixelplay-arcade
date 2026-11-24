@@ -46,3 +46,22 @@
 .leaderboard-select-label{display:block;margin:16px 0 6px;color:var(--muted);font:700 10px 'DM Mono',monospace;letter-spacing:.12em}
 .leaderboard-select{width:100%;max-width:260px;padding:11px 38px 11px 13px;border:1px solid #343d5a;border-radius:9px;background:#151b2b;color:var(--text);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .leaderboard-select:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* Player accounts */
+.account-backdrop{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:18px;background:#050610e8;backdrop-filter:blur(9px)}
+.account-backdrop[hidden]{display:none}
+.account-modal{width:min(440px,100%);max-height:90vh;overflow:auto;padding:25px;background:#111426;border:1px solid #49436c;border-radius:16px;box-shadow:0 25px 100px #000b}
+.account-modal h2{font-size:25px;margin:0}
+.account-status,.account-message,.account-footnote{font-size:12px;line-height:1.6;color:var(--muted)}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:20px 0 16px;padding:4px;background:#090d1b;border:1px solid var(--line);border-radius:9px}
+.auth-tab{padding:10px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer}
+.auth-tab.active{background:#282443;color:#fff}
+.account-form{display:grid;gap:13px}
+.account-form label{display:grid;gap:7px;color:var(--muted);font:700 10px 'DM Mono',monospace;letter-spacing:1px}
+.account-form input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid #343d5a;border-radius:8px;background:#0b1020;color:#fff;font:13px inherit;letter-spacing:0}
+.account-form input:focus{outline:2px solid var(--cyan);outline-offset:1px}
+.account-submit{width:100%;margin-top:5px}
+.account-submit:disabled{opacity:.55;cursor:wait}
+.account-signout{margin-top:10px;padding:9px 13px;border:1px solid #75475d;border-radius:8px;background:#321b2c;color:#ffb2c7;font-weight:700;cursor:pointer}
+.account-footnote{margin:16px 0 0;font-size:10px}
+@media(max-width:560px){.account-modal{padding:19px}.account-modal h2{font-size:22px}}
