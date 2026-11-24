@@ -53,6 +53,7 @@ function updateAccountUI(){
  if(name)name.textContent=authSession?.user?player:safeName();
  if(pill)pill.title=authSession?.user?'Account settings':'Sign in or create a player account';
  if(out)out.hidden=!authSession?.user;
+ $('#accountForm').hidden=!!authSession?.user;$('.auth-tabs').hidden=!!authSession?.user;
  if(status)status.textContent=authSession?.user?'Signed in as '+(authSession.user.email||'player'):'Create an account to save your identity and submit global scores.';
 }
 function openAccount(){const modal=$('#accountModal');if(!modal)return;modal.hidden=false;updateAccountUI();$('#accountPassword')?.focus()}
