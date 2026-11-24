@@ -16,7 +16,7 @@
   <header class="topbar">
     <a class="brand" href="#" aria-label="PixelPlay Arcade home"><span class="brand-mark">P</span><span>PIXEL<span class="accent">PLAY</span></span></a>
     <nav><a href="#games">Games</a><a href="#leaderboard">Leaderboard</a><a href="about.html">About</a></nav>
-    <button class="profile-pill" id="profileButton" type="button"><span class="avatar">✦</span><span id="playerName">Guest Player</span></button>
+    <button class="profile-pill" id="profileButton" type="button" aria-label="Player account"><span class="avatar">✦</span><span id="playerName">Guest Player</span></button>
   </header>
   <main>
     <section class="hero">
@@ -55,6 +55,22 @@
   </main>
   <footer><a class="brand" href="#"><span class="brand-mark">P</span><span>PIXEL<span class="accent">PLAY</span></span></a><p>Small games. Endless rematches.</p><div class="footer-links"><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="mailto:hello@pixelplayarcade.example">Contact</a></div><small>© <span id="year"></span> PixelPlay Arcade. Made for fun.</small></footer>
   <div class="modal-backdrop" id="gameModal" hidden><section class="game-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-top"><div><p class="eyebrow" id="modalEyebrow">ARCADE GAME</p><h2 id="modalTitle">Game title</h2></div><button class="icon-btn" id="closeGame" aria-label="Close game">×</button></div><div id="gameStage" class="game-stage"></div><p class="game-help" id="gameHelp"></p></section></div>
+  <div class="account-backdrop" id="accountModal" hidden>
+    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+      <div class="modal-top"><div><p class="eyebrow">PLAYER IDENTITY</p><h2 id="accountTitle">Your arcade account</h2></div><button class="icon-btn" id="accountClose" type="button" aria-label="Close account">×</button></div>
+      <p id="accountStatus" class="account-status">Create an account to save your identity and submit global scores.</p>
+      <div class="auth-tabs"><button id="authSignupMode" class="auth-tab active" type="button">Create account</button><button id="authLoginMode" class="auth-tab" type="button">Sign in</button></div>
+      <form id="accountForm" class="account-form">
+        <label id="authUsernameWrap">PLAYER NAME<input id="accountUsername" type="text" minlength="3" maxlength="18" pattern="[A-Za-z0-9_]{3,18}" autocomplete="nickname" placeholder="PixelPilot" required></label>
+        <label>EMAIL<input id="accountEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+        <label>PASSWORD<input id="accountPassword" type="password" minlength="8" autocomplete="new-password" placeholder="At least 8 characters" required></label>
+        <button class="game-action account-submit" id="authSubmit" type="submit">Create account</button>
+      </form>
+      <p id="authMessage" class="account-message" role="status">Choose a public player name. Use your email to secure your account.</p>
+      <button class="account-signout" id="accountSignout" type="button" hidden>Sign out</button>
+      <p class="account-footnote">Your email stays private. Your player name appears on public leaderboards. Scores are submitted through server-side checks.</p>
+    </section>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
