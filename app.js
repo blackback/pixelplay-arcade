@@ -71,7 +71,8 @@ async function handleAuthSubmit(e){
   if(authMode==='signup'){
    if(!/^[A-Za-z0-9_]{3,18}$/.test(username))throw new Error('Username must be 3–18 letters, numbers or underscores.');
    store.set('pendingUsername',username);
-   const data=await authRequest('/auth/v1/signup',{email,password,data:{display_name:username}});
+   const redirectTo=window.location.origin+'/?auth=confirmed';
+   const data=await authRequest('/auth/v1/signup?redirect_to='+encodeURIComponent(redirectTo),{email,password,data:{display_name:username}});
    if(!data.access_token){message.textContent='Check your email for the confirmation link. Then return here and sign in.';return;}
    authSession=data;store.set('authSession',data);
   }else{
@@ -81,6 +82,14 @@ async function handleAuthSubmit(e){
   await loadPlayerProfile();updateAccountUI();closeAccount();toast('Welcome, '+player+'!');renderGlobalLeaderboard();
  }catch(error){message.textContent=error.message||'Could not complete account request.'}
  finally{submit.disabled=false}
+}
+async function resendConfirmation(){
+ const email=$('#accountEmail').value.trim();
+ if(!email){$('#authMessage').textContent='Enter your signup email first.';return;}
+ const button=$('#resendConfirmation');button.disabled=true;
+ try{await authRequest('/auth/v1/resend?redirect_to='+encodeURIComponent(window.location.origin+'/?auth=confirmed'),{type:'signup',email});$('#authMessage').textContent='A fresh confirmation link has been sent. Check your inbox and spam folder.';}
+ catch(error){$('#authMessage').textContent=error.message||'Could not resend confirmation email.';}
+ finally{button.disabled=false;}
 }
 async function signOut(){
  try{if(authSession?.access_token)await fetch(SUPABASE_URL+'/auth/v1/logout',{method:'POST',headers:authHeaders()})}catch{}
@@ -211,6 +220,7 @@ $('#accountForm')?.addEventListener('submit',handleAuthSubmit);
 $('#authSignupMode')?.addEventListener('click',()=>setAuthMode('signup'));
 $('#authLoginMode')?.addEventListener('click',()=>setAuthMode('login'));
 $('#accountSignout')?.addEventListener('click',signOut);
+$('#resendConfirmation')?.addEventListener('click',resendConfirmation);
 setAuthMode('signup');
 (async()=>{try{if(await ensureFreshSession()){await loadPlayerProfile();updateAccountUI()}}catch(e){console.error(e);toast('Could not load player account.')}})();
 renderStats();renderGlobalLeaderboard();
