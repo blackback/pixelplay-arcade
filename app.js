@@ -9,7 +9,45 @@ function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('sh
 function safeName(){return player==='Guest Player'?'Guest Player':player}
 function renderStats(){ $('#playerName').textContent=safeName();$('#playedCount').textContent=rounds;$('#bestScore').textContent=scores.length?Math.max(...scores.map(s=>s.score)):'—';$('#scoreList').innerHTML=scores.length?scores.slice(0,6).map((s,i)=>'<div class="score-row"><span>'+(i+1)+'. '+escapeHtml(s.game)+' <small class="muted">· '+escapeHtml(s.name)+'</small></span><strong>'+escapeHtml(String(s.score))+'</strong></div>').join(''):'<p class="muted">Play a game to put your first score on the board.</p>'}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function saveScore(game,score){rounds++;store.set('rounds',rounds);scores.push({game,name:player,score,at:Date.now()});scores.sort((a,b)=>b.score-a.score);scores=scores.slice(0,20);store.set('scores',scores);
+const SUPABASE_URL='https://rgtwsnecxzirdbfrgvjf.supabase.co';
+const SUPABASE_KEY='sb_publishable_J6rmAQy3tnhDBAhKni2VeQ_F5HG3EG5';
+const GAME_SLUGS={'Reaction Rush':'reaction-rush','Memory Match':'memory-match','Neon Snake':'neon-snake','Target Tap':'target-tap','2048 Dash':'2048-dash'};
+let leaderboardBusy=false;
+async function submitGlobalScore(game,score){
+  const slug=GAME_SLUGS[game];
+  if(!slug || !Number.isFinite(score)) return;
+  try{
+    const response=await fetch(SUPABASE_URL+'/rest/v1/leaderboard_scores',{
+      method:'POST',
+      headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
+      body:JSON.stringify({game:slug,player_name:String(player||'Guest Player').trim().slice(0,18)||'Guest Player',score:Math.max(0,Math.min(1000000,Math.round(score)))})
+    });
+    if(!response.ok) throw new Error('Score submission failed ('+response.status+')');
+    toast('Score submitted to the global leaderboard!');
+    renderGlobalLeaderboard();
+  }catch(error){console.error(error);toast('Saved locally; global submission failed.');}
+}
+async function renderGlobalLeaderboard(){
+  const list=$('#globalScoreList'),select=$('#leaderboardGame');
+  if(!list||!select||leaderboardBusy)return;
+  leaderboardBusy=true;list.innerHTML='<p class="muted">Loading global scores…</p>';
+  const game=select.value||'reaction-rush';
+  const order=game==='reaction-rush'?'score.asc':'score.desc';
+  try{
+    const url=SUPABASE_URL+'/rest/v1/leaderboard_scores?select=player_name,score,created_at&game=eq.'+encodeURIComponent(game)+'&order='+order+',created_at.asc&limit=10';
+    const response=await fetch(url,{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY}});
+    if(!response.ok)throw new Error('Leaderboard request failed ('+response.status+')');
+    const rows=await response.json();
+    list.innerHTML=rows.length?rows.map((r,i)=>'<div class="score-row"><span>'+(i+1)+'. '+escapeHtml(r.player_name)+'</span><strong>'+escapeHtml(String(r.score))+(game==='reaction-rush'?' pts':'')+'</strong></div>').join(''):'<p class="muted">No scores yet. Be the first to set a record!</p>';
+  }catch(error){console.error(error);list.innerHTML='<p class="muted">Global leaderboard is temporarily unavailable. Your local scores are still saved.</p>';}
+  finally{leaderboardBusy=false;}
+}
+function saveScore(game,score){
+  rounds++;store.set('rounds',rounds);
+  scores.push({game,name:player,score,at:Date.now()});
+  scores.sort((a,b)=>b.score-a.score);scores=scores.slice(0,20);store.set('scores',scores);
+  renderStats();submitGlobalScore(game,score);
+}
 reaction=function(stage){
  let round=0,times=[],timer=null,started=0,state='idle';
  const pad=document.createElement('button'),info=document.createElement('p'),score=document.createElement('div'),progress=document.createElement('div'),go=button('Start 5-round run',begin);
@@ -48,7 +86,7 @@ number=function(stage){
  grid.addEventListener('touchstart',e=>{const t=e.changedTouches[0];touch={x:t.clientX,y:t.clientY}},{passive:true});grid.addEventListener('touchend',e=>{if(!touch)return;const t=e.changedTouches[0],dx=t.clientX-touch.x,dy=t.clientY-touch.y;touch=null;if(Math.max(Math.abs(dx),Math.abs(dy))>24)move(Math.abs(dx)>Math.abs(dy)?dx>0?'ArrowRight':'ArrowLeft':dy>0?'ArrowDown':'ArrowUp')},{passive:true});document.addEventListener('keydown',key);activeCleanup=()=>document.removeEventListener('keydown',key);reset();
 };
 
-renderStats();toast('Score saved on this device!')}
+
 $('#profileButton').addEventListener('click',()=>{const next=prompt('Choose your arcade nickname (up to 16 characters):',player==='Guest Player'?'':player);if(next===null)return;const clean=next.trim().slice(0,16);if(!clean){toast('Nickname was not changed.');return}player=clean;store.set('player',player);renderStats();toast('Welcome, '+player+'!')});
 $('#gameSearch').addEventListener('input',filterGames);
 $$('.filter').forEach(b=>b.addEventListener('click',()=>{$$('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');filterGames()}));
@@ -99,5 +137,6 @@ function snake(stage){
   reset();clearInterval(loop);running=false;pauseBtn.disabled=true;info.textContent='Ready · Press Start to play';
 }
 function number(stage){let board=Array(16).fill(0),score=0,ended=false;const grid=document.createElement('div');grid.className='number-board';const info=document.createElement('div');info.className='muted';const controls=document.createElement('div');controls.className='game-controls';[['↑','ArrowUp'],['←','ArrowLeft'],['↓','ArrowDown'],['→','ArrowRight']].forEach(([v,k])=>controls.append(button(v,()=>move(k))));stage.append(info,grid,controls,button('Restart',reset));function reset(){board=Array(16).fill(0);score=0;ended=false;spawn();spawn();render()}function spawn(){const empty=board.map((v,i)=>v?null:i).filter(v=>v!==null);if(empty.length)board[empty[Math.floor(Math.random()*empty.length)]]=Math.random()<.9?2:4}function render(){grid.innerHTML='';board.forEach(v=>{const c=document.createElement('div');c.className='number-cell'+(v?' v'+Math.min(v,128):'');c.textContent=v||'';grid.append(c)});info.textContent='Score: '+score+' · '+(ended?'No more moves':'Combine tiles to reach 2048')}function move(key){if(ended)return;const dirs={ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0],a:[0,-1],d:[0,1],w:[-1,0],s:[1,0]},d=dirs[key];if(!d)return;let changed=false;for(let line=0;line<4;line++){let ids=[];for(let j=0;j<4;j++)ids.push(d[0]?(d[0]>0?3-j:j)*4+line:(d[1]>0?3-j:j)+line*4);let vals=ids.map(i=>board[i]).filter(Boolean),out=[];for(let i=0;i<vals.length;i++){if(vals[i]===vals[i+1]){out.push(vals[i]*2);score+=vals[i]*2;i++}else out.push(vals[i])}while(out.length<4)out.push(0);ids.forEach((id,j)=>{if(board[id]!==out[j])changed=true;board[id]=out[j]})}if(changed){spawn();if(board.includes(2048)){ended=true;info.textContent='You reached 2048!';saveScore('2048 Dash',score+2048)}else if(!board.some((v,i)=>!v||i%4<3&&v===board[i+1]||i<12&&v===board[i+4])){ended=true;saveScore('2048 Dash',score)}render()}}function key(e){if($('#gameModal').hidden)return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();move(e.key)}else if(['w','a','s','d'].includes(e.key.toLowerCase())){e.preventDefault();move(e.key.toLowerCase())}}document.addEventListener('keydown',key);activeCleanup=()=>document.removeEventListener('keydown',key);reset()}
-renderStats();
+$('#leaderboardGame')?.addEventListener('change',renderGlobalLeaderboard);
+renderStats();renderGlobalLeaderboard();
 })();
