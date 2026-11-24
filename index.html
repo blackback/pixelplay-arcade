@@ -8,7 +8,7 @@
   <meta property="og:title" content="PixelPlay Arcade — Play Something Fun">
   <meta property="og:description" content="Free mini-games. No downloads. Just play.">
   <title>PixelPlay Arcade — Free Online Mini Games</title>
-  <link rel="canonical" href="https://pixelplay-arcade.netlify.app/">
+  <link rel="canonical" href="https://pixelplay-arcade22.netlify.app/">
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
 </head>
@@ -16,7 +16,7 @@
   <header class="topbar">
     <a class="brand" href="#" aria-label="PixelPlay Arcade home"><span class="brand-mark">P</span><span>PIXEL<span class="accent">PLAY</span></span></a>
     <nav><a href="#games">Games</a><a href="#leaderboard">Leaderboard</a><a href="about.html">About</a></nav>
-    <button class="profile-pill" id="profileButton" type="button" aria-label="Player account"><span class="avatar">✦</span><span id="playerName">Guest Player</span></button>
+    <button class="profile-pill" id="profileButton" type="button" aria-label="Change your arcade nickname"><span class="avatar">✦</span><span id="playerName">Guest Player</span></button>
   </header>
   <main>
     <section class="hero">
@@ -48,30 +48,13 @@
       <p class="empty-state" id="emptyState" hidden>No games match that search. Try another name.</p>
     </section>
     <section class="lower-grid">
-      <div class="leader-panel" id="leaderboard"><div class="panel-heading"><div><p class="eyebrow">GLOBAL HALL OF FAME</p><h2>World leaderboard</h2></div><span class="trophy">🏆</span></div><p class="panel-note">Compete with players worldwide. Create a free player account to submit scores. Only your best score per game appears; Reaction Rush rewards faster reactions.</p><label class="leaderboard-select-label" for="leaderboardGame">GAME</label><select id="leaderboardGame" class="leaderboard-select"><option value="reaction-rush">Reaction Rush</option><option value="memory-match">Memory Match</option><option value="neon-snake">Neon Snake</option><option value="target-tap">Target Tap</option><option value="2048-dash">2048 Dash</option></select><div id="globalScoreList" class="score-list"><p class="muted">Loading global scores…</p></div><div id="scoreList" hidden></div></div>
+      <div class="leader-panel" id="leaderboard"><div class="panel-heading"><div><p class="eyebrow">GLOBAL HALL OF FAME</p><h2>World leaderboard</h2></div><span class="trophy">🏆</span></div><p class="panel-note">Compete with players worldwide. No account or email required. Choose a nickname and submit your scores. Only the best score per nickname per game appears; Reaction Rush rewards faster reactions.</p><label class="leaderboard-select-label" for="leaderboardGame">GAME</label><select id="leaderboardGame" class="leaderboard-select"><option value="reaction-rush">Reaction Rush</option><option value="memory-match">Memory Match</option><option value="neon-snake">Neon Snake</option><option value="target-tap">Target Tap</option><option value="2048-dash">2048 Dash</option></select><div id="globalScoreList" class="score-list"><p class="muted">Loading global scores…</p></div><div id="scoreList" hidden></div></div>
       <div class="challenge-panel"><p class="eyebrow">TODAY'S MINI MISSION</p><div class="challenge-icon">⚡</div><h2>Beat the clock.</h2><p>Play Reaction Rush and try to get an average reaction time under 300 milliseconds.</p><button class="secondary-btn" data-launch="reaction">Accept challenge ↗</button></div>
     </section>
     <section class="seo-copy"><p class="eyebrow">WELCOME TO PIXELPLAY</p><h2>Free online arcade games, ready when you are.</h2><p>PixelPlay Arcade is a collection of quick browser games built for short breaks and friendly personal challenges. Test your reaction speed, train your memory, guide a neon snake and solve number puzzles. Games run right in your browser, with no download or account required. Choose a game, learn the controls and see if you can beat your personal best.</p></section>
   </main>
   <footer><a class="brand" href="#"><span class="brand-mark">P</span><span>PIXEL<span class="accent">PLAY</span></span></a><p>Small games. Endless rematches.</p><div class="footer-links"><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="mailto:hello@pixelplayarcade.example">Contact</a></div><small>© <span id="year"></span> PixelPlay Arcade. Made for fun.</small></footer>
   <div class="modal-backdrop" id="gameModal" hidden><section class="game-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-top"><div><p class="eyebrow" id="modalEyebrow">ARCADE GAME</p><h2 id="modalTitle">Game title</h2></div><button class="icon-btn" id="closeGame" aria-label="Close game">×</button></div><div id="gameStage" class="game-stage"></div><p class="game-help" id="gameHelp"></p></section></div>
-  <div class="account-backdrop" id="accountModal" hidden>
-    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
-      <div class="modal-top"><div><p class="eyebrow">PLAYER IDENTITY</p><h2 id="accountTitle">Your arcade account</h2></div><button class="icon-btn" id="accountClose" type="button" aria-label="Close account">×</button></div>
-      <p id="accountStatus" class="account-status">Create an account to save your identity and submit global scores.</p>
-      <div class="auth-tabs"><button id="authSignupMode" class="auth-tab active" type="button">Create account</button><button id="authLoginMode" class="auth-tab" type="button">Sign in</button></div>
-      <form id="accountForm" class="account-form">
-        <label id="authUsernameWrap">PLAYER NAME<input id="accountUsername" type="text" minlength="3" maxlength="18" pattern="[A-Za-z0-9_]{3,18}" autocomplete="nickname" placeholder="PixelPilot" required></label>
-        <label>EMAIL<input id="accountEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
-        <label>PASSWORD<input id="accountPassword" type="password" minlength="8" autocomplete="new-password" placeholder="At least 8 characters" required></label>
-        <button class="game-action account-submit" id="authSubmit" type="submit">Create account</button>
-      </form>
-      <p id="authMessage" class="account-message" role="status">Choose a public player name. Use your email to secure your account.</p>
-      <button class="account-signout" id="resendConfirmation" type="button" hidden>Resend confirmation email</button>
-      <button class="account-signout" id="accountSignout" type="button" hidden>Sign out</button>
-      <p class="account-footnote">Your email stays private. Your player name appears on public leaderboards. Scores are submitted through server-side checks.</p>
-    </section>
-  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
