@@ -13,3 +13,31 @@
 .snake-direction:active{transform:translateY(2px);box-shadow:0 2px 0 #09180f;background:#28583d}
 .snake-dpad-center{width:64px;height:54px;border-radius:12px;background:#0d1c14;border:1px solid #1e3929}
 @media(max-width:560px){.game-stage:has(.snake-wrap){padding:12px 8px 16px}.snake-wrap{gap:10px}.snake-dpad{grid-template-columns:repeat(3,68px);grid-template-rows:repeat(3,56px);gap:7px}.snake-direction,.snake-dpad-center{width:68px;height:56px}.snake-actions .game-action{min-width:88px;padding:11px 12px}}
+
+
+/* Arcade gameplay polish */
+.game-stage{gap:15px}
+.run-progress{width:100%;text-align:center;color:var(--cyan);font:11px 'DM Mono',monospace;letter-spacing:1.5px}
+.reaction-pad{min-height:210px;max-width:520px;transition:background .16s,transform .16s;letter-spacing:1px}
+.reaction-pad:active{transform:scale(.99)}
+.reaction-pad.wait{background:linear-gradient(135deg,#7b263e,#421b38);box-shadow:inset 0 0 50px #ff5a8b22}
+.reaction-pad.go{background:linear-gradient(135deg,#16a17c,#075b54);box-shadow:0 0 35px #31e9b455,inset 0 0 35px #b9ffe522}
+.memory-info,.target-info,.number-info{width:100%;text-align:center;font:600 11px 'DM Mono',monospace;letter-spacing:.5px;color:var(--cyan)}
+.memory-board{width:min(100%,360px);grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.memory-card{height:auto;aspect-ratio:1/1;font-size:clamp(20px,5vw,30px);font-weight:700;transition:transform .15s,background .15s}
+.memory-card:not(.matched):hover{transform:translateY(-2px);border-color:var(--cyan)}
+.memory-card.matched{box-shadow:0 0 16px #39dca344;border-color:#49dca0}
+.memory-result{font-size:clamp(22px,5vw,34px);text-align:center}
+.target-zone{height:270px;max-width:520px;overflow:hidden;border:1px solid #34415c;box-shadow:inset 0 0 45px #0006}
+.target-dot{width:42px;height:42px;padding:0;display:grid;place-items:center;font-size:0;border:4px solid #ffd2e0;background:radial-gradient(circle at 35% 30%,#fff,#ff8bb2 28%,#ff3e83 70%);box-shadow:0 0 8px #ff548c,0 0 25px #ff548c88;transition:transform .1s}
+.target-dot:hover{transform:scale(1.1)}
+.target-finish{height:100%;display:grid;place-items:center;color:var(--cyan);font:700 28px 'DM Mono',monospace}
+.number-board{width:min(100%,300px);grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:8px;background:#151b2b;border:1px solid #343d5a;border-radius:12px;touch-action:pan-y;user-select:none}
+.number-cell{width:100%;height:auto;aspect-ratio:1/1;font-size:clamp(15px,4vw,23px);border:1px solid #ffffff0b;transition:background .12s}
+.number-cell.v2{background:#e6d8b5;color:#382c3b}.number-cell.v4{background:#f0bd71;color:#382c3b}.number-cell.v8{background:#ed9678}.number-cell.v16,.number-cell.v32{background:#b28ad9}.number-cell.v64,.number-cell.v128{background:#6e9fce}.number-cell.v256,.number-cell.v512{background:#58b9ae}.number-cell.v1024{background:#e4c75d;color:#282033}
+.number-controls .game-action{width:48px;height:42px;padding:5px;font-size:18px}
+.game-controls .game-action{min-width:42px}
+.game-action{transition:transform .12s,filter .12s,box-shadow .12s}
+.game-action:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-2px);box-shadow:0 5px 16px #0004}
+.game-action:focus-visible,.reaction-pad:focus-visible,.memory-card:focus-visible,.target-dot:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@media(max-width:560px){.target-zone{height:235px}.memory-board{gap:6px}.memory-card{border-radius:7px}.number-board{gap:5px;padding:6px}.number-controls .game-action{width:52px;height:46px}}
