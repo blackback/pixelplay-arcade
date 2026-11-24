@@ -2,7 +2,7 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const store = {get(k,d){try{return JSON.parse(localStorage.getItem('pp_'+k)) ?? d}catch{return d}},set(k,v){localStorage.setItem('pp_'+k,JSON.stringify(v))}};
-let player=store.get('player','Guest Player'), scores=store.get('scores',[]), rounds=store.get('rounds',0), activeCleanup=()=>{}, toastTimer;
+let player=store.get('player','PixelPlayer'), scores=store.get('scores',[]), rounds=store.get('rounds',0), activeCleanup=()=>{}, toastTimer;
 const games={reaction:{title:'Reaction Rush',help:'Wait for the panel to turn green, then click as fast as you can. Five rounds make one run.'},memory:{title:'Memory Match',help:'Flip two cards at a time and find all eight matching pairs. Fewer moves earn a better score.'},snake:{title:'Neon Snake',help:'Use arrow keys or WASD. Eat the glowing fruit, grow longer and avoid walls or your own tail.'},target:{title:'Target Tap',help:'Hit the moving target before it disappears. Build a combo in a 30-second run.'},number:{title:'2048 Dash',help:'Use arrow keys, WASD, or swipe to slide. Merge matching tiles, undo a move, and chase 2048.'}};
 $('#year').textContent=new Date().getFullYear();
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2200)}
@@ -12,97 +12,25 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':
 const SUPABASE_URL='https://rgtwsnecxzirdbfrgvjf.supabase.co';
 const SUPABASE_KEY='sb_publishable_J6rmAQy3tnhDBAhKni2VeQ_F5HG3EG5';
 const GAME_SLUGS={'Reaction Rush':'reaction-rush','Memory Match':'memory-match','Neon Snake':'neon-snake','Target Tap':'target-tap','2048 Dash':'2048-dash'};
-let leaderboardRequest=0, authSession=store.get('authSession',null), authMode='signup';
-function authHeaders(extra={}){return {apikey:SUPABASE_KEY,'Content-Type':'application/json',...(authSession?.access_token?{Authorization:'Bearer '+authSession.access_token}:{}),...extra}}
-async function authRequest(path,body,token){
- const r=await fetch(SUPABASE_URL+path,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:JSON.stringify(body)});
- const data=await r.json().catch(()=>({}));
- if(!r.ok)throw new Error(data.msg||data.message||data.error_description||data.error||'Authentication request failed.');
- return data;
-}
-async function refreshAuth(){
- if(!authSession?.refresh_token)return false;
- try{const data=await authRequest('/auth/v1/token?grant_type=refresh_token',{refresh_token:authSession.refresh_token});
- authSession=data;store.set('authSession',data);return true}catch{authSession=null;store.set('authSession',null);return false}
-}
-async function ensureFreshSession(){
- if(!authSession?.access_token)return false;
- if(authSession.expires_at&&authSession.expires_at*1000<Date.now()+60000)return await refreshAuth();
- return true;
-}
-async function loadPlayerProfile(){
- if(!await ensureFreshSession())return;
- const user=authSession.user;
- const r=await fetch(SUPABASE_URL+'/rest/v1/player_profiles?select=username&user_id=eq.'+encodeURIComponent(user.id),{headers:authHeaders()});
- if(!r.ok)throw new Error('Could not load player profile.');
- const rows=await r.json();
- if(rows[0]?.username){player=rows[0].username;store.set('player',player);renderStats();return;}
- let pending=store.get('pendingUsername','');
- if(!pending){
-  const suggested=String(user.user_metadata?.display_name||user.email?.split('@')[0]||'').replace(/[^A-Za-z0-9_]/g,'').slice(0,18);
-  pending=suggested.length>=3?suggested:'Player'+user.id.replace(/-/g,'').slice(0,6);
-  store.set('pendingUsername',pending);
- }
- const save=await fetch(SUPABASE_URL+'/rest/v1/player_profiles?on_conflict=user_id',{method:'POST',headers:authHeaders({Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify({user_id:user.id,username:pending})});
- const data=await save.json().catch(()=>[]);
- if(!save.ok)throw new Error(data.message||data.details||'That username may already be taken.');
- player=data[0]?.username||pending;store.set('player',player);store.set('pendingUsername','');renderStats();
-}
-function updateAccountUI(){
- const pill=$('#profileButton'),name=$('#playerName'),out=$('#accountSignout'),status=$('#accountStatus');
- if(name)name.textContent=authSession?.user?player:safeName();
- if(pill)pill.title=authSession?.user?'Account settings':'Sign in or create a player account';
- if(out)out.hidden=!authSession?.user;
- $('#accountForm').hidden=!!authSession?.user;$('.auth-tabs').hidden=!!authSession?.user;
- if(status)status.textContent=authSession?.user?'Signed in as '+(authSession.user.email||'player'):'Create an account to save your identity and submit global scores.';
-}
-function openAccount(){const modal=$('#accountModal');if(!modal)return;modal.hidden=false;updateAccountUI();$('#accountPassword')?.focus()}
-function closeAccount(){$('#accountModal').hidden=true}
-function setAuthMode(mode){
- authMode=mode;$('#resendConfirmation').hidden=true;$('#authUsernameWrap').hidden=mode!=='signup';$('#authSubmit').textContent=mode==='signup'?'Create account':'Sign in';
- $('#authSignupMode').classList.toggle('active',mode==='signup');$('#authLoginMode').classList.toggle('active',mode==='login');
- $('#authPassword').autocomplete=mode==='signup'?'new-password':'current-password';$('#accountUsername').required=mode==='signup';
- $('#authMessage').textContent=mode==='signup'?'Choose a public player name. Use your email to secure your account.':'Welcome back. Sign in to continue your arcade profile.';
-}
-async function handleAuthSubmit(e){
- e.preventDefault();const email=$('#accountEmail').value.trim(),password=$('#accountPassword').value,username=$('#accountUsername').value.trim();
- const message=$('#authMessage'),submit=$('#authSubmit');submit.disabled=true;message.textContent='Please wait…';
- try{
-  if(authMode==='signup'){
-   if(!/^[A-Za-z0-9_]{3,18}$/.test(username))throw new Error('Username must be 3–18 letters, numbers or underscores.');
-   store.set('pendingUsername',username);
-   const redirectTo=window.location.origin+'/?auth=confirmed';
-   const data=await authRequest('/auth/v1/signup?redirect_to='+encodeURIComponent(redirectTo),{email,password,data:{display_name:username}});
-   if(!data.access_token){$('#resendConfirmation').hidden=false;message.textContent='Check your email for the confirmation link. Then return here and sign in. If the link was broken, resend it below.';return;}
-   authSession=data;store.set('authSession',data);
-  }else{
-   const data=await authRequest('/auth/v1/token?grant_type=password',{email,password});
-   authSession=data;store.set('authSession',data);
-  }
-  await loadPlayerProfile();updateAccountUI();closeAccount();toast('Welcome, '+player+'!');renderGlobalLeaderboard();
- }catch(error){message.textContent=error.message||'Could not complete account request.'}
- finally{submit.disabled=false}
-}
-async function resendConfirmation(){
- const email=$('#accountEmail').value.trim();
- if(!email){$('#authMessage').textContent='Enter your signup email first.';return;}
- const button=$('#resendConfirmation');button.disabled=true;
- try{await authRequest('/auth/v1/resend?redirect_to='+encodeURIComponent(window.location.origin+'/?auth=confirmed'),{type:'signup',email});$('#authMessage').textContent='A fresh confirmation link has been sent. Check your inbox and spam folder.';}
- catch(error){$('#authMessage').textContent=error.message||'Could not resend confirmation email.';}
- finally{button.disabled=false;}
-}
-async function signOut(){
- try{if(authSession?.access_token)await fetch(SUPABASE_URL+'/auth/v1/logout',{method:'POST',headers:authHeaders()})}catch{}
- authSession=null;store.set('authSession',null);player='Guest Player';store.set('player',player);updateAccountUI();closeAccount();toast('Signed out.');
+let leaderboardRequest=0;
+function setNickname(){
+ const next=prompt('Choose your public arcade nickname (3–18 letters, numbers or underscores):',player);
+ if(next===null)return;
+ const clean=next.trim();
+ if(!/^[A-Za-z0-9_]{3,18}$/.test(clean)){toast('Use 3–18 letters, numbers or underscores.');return;}
+ player=clean;store.set('player',player);renderStats();toast('Nickname updated to '+player);
 }
 async function submitGlobalScore(game,score){
  const slug=GAME_SLUGS[game];if(!slug||!Number.isFinite(score))return;
- if(!await ensureFreshSession()){toast('Sign in to submit scores to the global leaderboard.');openAccount();return;}
  try{
-  const response=await fetch(SUPABASE_URL+'/functions/v1/submit-score',{method:'POST',headers:authHeaders(),body:JSON.stringify({game:slug,score:Math.max(0,Math.round(score))})});
+  const response=await fetch(SUPABASE_URL+'/functions/v1/submit-score',{
+   method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({game:slug,score:Math.max(0,Math.round(score)),playerName:player})
+  });
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(data.error||'Score submission failed.');
-  toast('Verified score submitted globally!');renderGlobalLeaderboard();
+  toast('Score submitted to the global leaderboard!');
+  renderGlobalLeaderboard();
  }catch(error){console.error(error);toast(error.message||'Score could not be submitted.');}
 }
 async function renderGlobalLeaderboard(){
@@ -114,7 +42,7 @@ async function renderGlobalLeaderboard(){
   const response=await fetch(url,{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY}});
   if(!response.ok)throw new Error('Leaderboard request failed ('+response.status+')');
   const rows=await response.json();if(requestId!==leaderboardRequest)return;
-  list.innerHTML=rows.length?rows.map((r,i)=>'<div class="score-row"><span>'+(i+1)+'. '+escapeHtml(r.player_name)+'</span><strong>'+escapeHtml(String(r.score))+'</strong></div>').join(''):'<p class="muted">No scores yet. Be the first to set a record!</p>';
+  list.innerHTML=rows.length?rows.map((r,i)=>'<div class="score-row"><span>'+(i+1)+'. '+escapeHtml(r.player_name)+(r.player_name.toLowerCase()===player.toLowerCase()?' <small class="muted">· YOU</small>':'')+'</span><strong>'+escapeHtml(String(r.score))+'</strong></div>').join(''):'<p class="muted">No scores yet. Be the first to set a record!</p>';
  }catch(error){console.error(error);if(requestId===leaderboardRequest)list.innerHTML='<p class="muted">Global leaderboard is temporarily unavailable.</p>'}
 }
 function saveScore(game,score){
@@ -213,15 +141,9 @@ function snake(stage){
 }
 function number(stage){let board=Array(16).fill(0),score=0,ended=false;const grid=document.createElement('div');grid.className='number-board';const info=document.createElement('div');info.className='muted';const controls=document.createElement('div');controls.className='game-controls';[['↑','ArrowUp'],['←','ArrowLeft'],['↓','ArrowDown'],['→','ArrowRight']].forEach(([v,k])=>controls.append(button(v,()=>move(k))));stage.append(info,grid,controls,button('Restart',reset));function reset(){board=Array(16).fill(0);score=0;ended=false;spawn();spawn();render()}function spawn(){const empty=board.map((v,i)=>v?null:i).filter(v=>v!==null);if(empty.length)board[empty[Math.floor(Math.random()*empty.length)]]=Math.random()<.9?2:4}function render(){grid.innerHTML='';board.forEach(v=>{const c=document.createElement('div');c.className='number-cell'+(v?' v'+Math.min(v,128):'');c.textContent=v||'';grid.append(c)});info.textContent='Score: '+score+' · '+(ended?'No more moves':'Combine tiles to reach 2048')}function move(key){if(ended)return;const dirs={ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0],a:[0,-1],d:[0,1],w:[-1,0],s:[1,0]},d=dirs[key];if(!d)return;let changed=false;for(let line=0;line<4;line++){let ids=[];for(let j=0;j<4;j++)ids.push(d[0]?(d[0]>0?3-j:j)*4+line:(d[1]>0?3-j:j)+line*4);let vals=ids.map(i=>board[i]).filter(Boolean),out=[];for(let i=0;i<vals.length;i++){if(vals[i]===vals[i+1]){out.push(vals[i]*2);score+=vals[i]*2;i++}else out.push(vals[i])}while(out.length<4)out.push(0);ids.forEach((id,j)=>{if(board[id]!==out[j])changed=true;board[id]=out[j]})}if(changed){spawn();if(board.includes(2048)){ended=true;info.textContent='You reached 2048!';saveScore('2048 Dash',score+2048)}else if(!board.some((v,i)=>!v||i%4<3&&v===board[i+1]||i<12&&v===board[i+4])){ended=true;saveScore('2048 Dash',score)}render()}}function key(e){if($('#gameModal').hidden)return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();move(e.key)}else if(['w','a','s','d'].includes(e.key.toLowerCase())){e.preventDefault();move(e.key.toLowerCase())}}document.addEventListener('keydown',key);activeCleanup=()=>document.removeEventListener('keydown',key);reset()}
 $('#leaderboardGame')?.addEventListener('change',renderGlobalLeaderboard);
-$('#profileButton')?.addEventListener('click',openAccount);
-$('#accountClose')?.addEventListener('click',closeAccount);
-$('#accountModal')?.addEventListener('click',e=>{if(e.target.id==='accountModal')closeAccount()});
-$('#accountForm')?.addEventListener('submit',handleAuthSubmit);
-$('#authSignupMode')?.addEventListener('click',()=>setAuthMode('signup'));
-$('#authLoginMode')?.addEventListener('click',()=>setAuthMode('login'));
-$('#accountSignout')?.addEventListener('click',signOut);
-$('#resendConfirmation')?.addEventListener('click',resendConfirmation);
-setAuthMode('signup');
-(async()=>{try{if(await ensureFreshSession()){await loadPlayerProfile();updateAccountUI()}}catch(e){console.error(e);toast('Could not load player account.')}})();
+$('#profileButton')?.addEventListener('click',setNickname);
+if(!/^[A-Za-z0-9_]{3,18}$/.test(player)){player='PixelPlayer';store.set('player',player);}
+localStorage.removeItem('pp_authSession');
+localStorage.removeItem('pp_pendingUsername');
 renderStats();renderGlobalLeaderboard();
 })();
