@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://pixelplay-arcade.netlify.app/sitemap.xml
