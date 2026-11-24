@@ -12,7 +12,7 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':
 const SUPABASE_URL='https://rgtwsnecxzirdbfrgvjf.supabase.co';
 const SUPABASE_KEY='sb_publishable_J6rmAQy3tnhDBAhKni2VeQ_F5HG3EG5';
 const GAME_SLUGS={'Reaction Rush':'reaction-rush','Memory Match':'memory-match','Neon Snake':'neon-snake','Target Tap':'target-tap','2048 Dash':'2048-dash'};
-let leaderboardBusy=false;
+let leaderboardRequest=0;
 async function submitGlobalScore(game,score){
   const slug=GAME_SLUGS[game];
   if(!slug || !Number.isFinite(score)) return;
@@ -29,8 +29,8 @@ async function submitGlobalScore(game,score){
 }
 async function renderGlobalLeaderboard(){
   const list=$('#globalScoreList'),select=$('#leaderboardGame');
-  if(!list||!select||leaderboardBusy)return;
-  leaderboardBusy=true;list.innerHTML='<p class="muted">Loading global scores…</p>';
+  if(!list||!select)return;
+  const requestId=++leaderboardRequest;list.innerHTML='<p class="muted">Loading global scores…</p>';
   const game=select.value||'reaction-rush';
   const order='score.desc';
   try{
@@ -38,9 +38,9 @@ async function renderGlobalLeaderboard(){
     const response=await fetch(url,{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY}});
     if(!response.ok)throw new Error('Leaderboard request failed ('+response.status+')');
     const rows=await response.json();
+    if(requestId!==leaderboardRequest)return;
     list.innerHTML=rows.length?rows.map((r,i)=>'<div class="score-row"><span>'+(i+1)+'. '+escapeHtml(r.player_name)+'</span><strong>'+escapeHtml(String(r.score))+(game==='reaction-rush'?' pts':'')+'</strong></div>').join(''):'<p class="muted">No scores yet. Be the first to set a record!</p>';
-  }catch(error){console.error(error);list.innerHTML='<p class="muted">Global leaderboard is temporarily unavailable. Your local scores are still saved.</p>';}
-  finally{leaderboardBusy=false;}
+  }catch(error){console.error(error);if(requestId===leaderboardRequest)list.innerHTML='<p class="muted">Global leaderboard is temporarily unavailable. Your local scores are still saved.</p>';}
 }
 function saveScore(game,score){
   rounds++;store.set('rounds',rounds);
